@@ -4,11 +4,7 @@ import sys
 
 from bit import PrivateKeyTestnet
 from bit.network.meta import Unspent
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-
-originator = "c3a52085b8a083eec981a8f451bf2334b1f3407ef232976931fbe483526bcf9f"
-
-amount = 10 ** 8
+from bitcoinrpc.authproxy import AuthServiceProxy
 
 
 def create_transactions(node1, node2, conn, original_tx, n):
@@ -36,7 +32,7 @@ def create_transactions(node1, node2, conn, original_tx, n):
                         script=last_tx["vout"][txindex]["scriptPubKey"]["hex"],
                         txindex=0,
                         txid=last_tx["txid"],
-                        segwit="np2wkh",
+                        segwit="p2pkh",
                     )
                 ],
                 fee=fee,
@@ -48,15 +44,17 @@ def create_transactions(node1, node2, conn, original_tx, n):
     return txs
 
 
-def main(wif1, wif2, rpcuser, rpcpassword, num_transactions, dry_run=False):
+def main(
+    wif1, wif2, rpcuser, rpcpassword, num_transactions, original_tx, dry_run=False
+):
     rpc_connection = AuthServiceProxy(
-        "http://%s:%s@127.0.0.1:18332" % (rpcpassword, rpcpassword)
+        "http://%s:%s@127.0.0.1:18332" % (rpcuser, rpcpassword)
     )
     txs = create_transactions(
         PrivateKeyTestnet(wif1),
         PrivateKeyTestnet(wif2),
         rpc_connection,
-        originator,
+        original_tx,
         num_transactions,
     )
     if dry_run:
@@ -76,6 +74,7 @@ def parse_arguments():
     parser.add_argument("--rpcpassword", required=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("num_transactions", type=int)
+    parser.add_argument("original_tx")
     return parser.parse_args(sys.argv[1:])
 
 

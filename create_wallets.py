@@ -1,4 +1,8 @@
 from bit import PrivateKeyTestnet
 
-print(PrivateKeyTestnet().to_wif())
-print(PrivateKeyTestnet().to_wif())
+a = PrivateKeyTestnet()
+print(a.to_wif())
+print(a.address)
+b = PrivateKeyTestnet()
+print(b.to_wif())
+print(b.address)

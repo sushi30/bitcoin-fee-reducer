@@ -5,6 +5,11 @@ import sys
 from bit import PrivateKeyTestnet
 from bit.network.meta import Unspent
 from bitcoinrpc.authproxy import AuthServiceProxy
+from bit.network import currency_to_satoshi_cached
+
+
+def btc_to_satoshi(x):
+    return currency_to_satoshi_cached(x, "btc")
 
 
 def create_transactions(node1, node2, conn, original_tx, n):
@@ -19,7 +24,7 @@ def create_transactions(node1, node2, conn, original_tx, n):
             for i, out in enumerate(last_tx["vout"])
             if out["scriptPubKey"]["addresses"][0] == sender.address
         ][0]
-        incoming_value = int(float(last_tx["vout"][txindex]["value"]) * 10 ** 8)
+        incoming_value = btc_to_satoshi(float(last_tx["vout"][txindex]["value"]))
         fee = 192 if i < n - 1 else incoming_value - 1
         transaction_value = incoming_value - fee
         txs += [
@@ -27,12 +32,12 @@ def create_transactions(node1, node2, conn, original_tx, n):
                 outputs=[(receiver.address, transaction_value, "satoshi")],
                 unspents=[
                     Unspent(
-                        amount=int(float(last_tx["vout"][txindex]["value"]) * 10 ** 8),
+                        amount=btc_to_satoshi(last_tx["vout"][txindex]["value"]),
                         confirmations=0,
                         script=last_tx["vout"][txindex]["scriptPubKey"]["hex"],
-                        txindex=0,
+                        txindex=txindex,
                         txid=last_tx["txid"],
-                        segwit="p2pkh",
+                        segwit="np2wkh",
                     )
                 ],
                 fee=fee,
